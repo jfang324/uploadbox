@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useRef, useMemo } from 'react'
-import { LeftColumn } from './left-column'
-import { MainContent } from './main-content'
+import FileList from '@/components/FileList'
 
 // Mock data for the file list
 const initialFiles = [
@@ -106,14 +105,9 @@ export function FileListComponent() {
 
     return (
         <div className="h-screen bg-gray-100 flex overflow-hidden">
-            <LeftColumn
+            <FileList
                 activeSection={activeSection}
                 setActiveSection={setActiveSection}
-                handleUpload={handleUpload}
-                handleLogout={handleLogout}
-            />
-            <MainContent
-                activeSection={activeSection}
                 searchTerm={searchTerm}
                 handleSearch={handleSearch}
                 fileTypeFilter={fileTypeFilter}
@@ -123,6 +117,8 @@ export function FileListComponent() {
                 selectedFiles={selectedFiles}
                 handleSelectFile={handleSelectFile}
                 handleDeleteSelected={handleDeleteSelected}
+                handleUpload={handleUpload}
+                handleLogout={handleLogout}
             />
             <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
         </div>
