@@ -1,6 +1,6 @@
 'use client'
-import { FileListComponent } from '@/components/file-list'
+import HomePage from '@/components/HomePage'
 
 export default function Home() {
-    return <FileListComponent />
+    return <HomePage />
 }

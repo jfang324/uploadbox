@@ -4,6 +4,16 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
 import { Download, Share2 } from 'lucide-react'
 
+/**
+ * A single file entry in the file list
+ * @param id - The unique identifier of the file. Likely the hashed filename
+ * @param name - The name of the file
+ * @param extension - The file extension
+ * @param size - The size of the file in bytes
+ * @param owner - The owner of the file
+ * @param isSelected - Whether the file is selected for deletion
+ * @param onSelect - A function to handle file selection
+ */
 interface FileEntryProps {
     id: number
     name: string

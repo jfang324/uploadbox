@@ -22,7 +22,7 @@ const initialFiles = [
     })),
 ]
 
-export function FileListComponent() {
+const HomePage = () => {
     const [files, setFiles] = useState(initialFiles)
     const [searchTerm, setSearchTerm] = useState('')
     const [fileTypeFilter, setFileTypeFilter] = useState('all')
@@ -124,3 +124,5 @@ export function FileListComponent() {
         </div>
     )
 }
+
+export default HomePage

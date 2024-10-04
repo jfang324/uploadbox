@@ -3,6 +3,13 @@
 import { Button } from '@/components/ui/button'
 import { FolderOpen, Share2, Trash, Upload, LogOut, File } from 'lucide-react'
 
+/**
+ * The left column of the file list. Contains the file list navigation and upload button
+ * @param activeSection - The active section of the left column
+ * @param setActiveSection - A function to set the active section of the left column
+ * @param handleUpload - A function to handle file upload
+ * @param handleLogout - A function to handle user logout
+ */
 interface LeftColumnProps {
     activeSection: string
     setActiveSection: (section: string) => void

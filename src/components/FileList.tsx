@@ -8,6 +8,22 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 import FileEntry from '@/components/FileEntry'
 import LeftColumn from '@/components/LeftColumn'
 
+/**
+ * The file list component. Consisting of a left column, a search bar, and a list of files
+ * @param activeSection - The active section of the left column
+ * @param setActiveSection - A function to set the active section of the left column
+ * @param searchTerm - The search term entered by the user
+ * @param handleSearch - A function to handle search term changes
+ * @param fileTypeFilter - The file type filter selected by the user
+ * @param handleFileTypeFilter - A function to handle file type filter changes
+ * @param fileTypes - An array of all available file types
+ * @param files - An array of all files in the system
+ * @param selectedFiles - An array of all selected files
+ * @param handleSelectFile - A function to handle file selection
+ * @param handleDeleteSelected - A function to handle file deletion
+ * @param handleUpload - A function to handle file upload
+ * @param handleLogout - A function to handle user logout
+ */
 interface FileListProps {
     activeSection: string
     setActiveSection: (section: string) => void
