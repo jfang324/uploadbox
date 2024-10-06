@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useRef, useMemo } from 'react'
+import { useState, useRef, useMemo, useEffect, use } from 'react'
+import { useUser } from '@auth0/nextjs-auth0/client'
 import FileList from '@/components/FileList'
 
 // Mock data for the file list
@@ -23,12 +24,33 @@ const initialFiles = [
 ]
 
 const HomePage = () => {
+    const { user } = useUser()
+    const [userId, setUserId] = useState<string | undefined>()
+    const [email, setEmail] = useState<string | undefined>()
+    const [name, setName] = useState<string | undefined>()
+
     const [files, setFiles] = useState(initialFiles)
     const [searchTerm, setSearchTerm] = useState('')
     const [fileTypeFilter, setFileTypeFilter] = useState('all')
     const [selectedFiles, setSelectedFiles] = useState<number[]>([])
     const [activeSection, setActiveSection] = useState('my-files')
     const fileInputRef = useRef<HTMLInputElement>(null)
+
+    const init = async () => {
+        if (user && 'email' in user) {
+            const response = await (
+                await fetch('/api/users', {
+                    method: 'POST',
+                    body: JSON.stringify({ email: 'hi@hi.com' }),
+                })
+            ).json()
+            console.log(response)
+        }
+    }
+
+    useEffect(() => {
+        init()
+    }, [])
 
     const fileTypes = useMemo(() => {
         const types = new Set(files.map((file) => file.extension).filter(Boolean))
@@ -99,12 +121,12 @@ const HomePage = () => {
     }
 
     const handleLogout = () => {
-        // Implement logout logic here
-        console.log('Logging out...')
+        window.location.href = '/api/auth/logout'
     }
 
     return (
         <div className="h-screen bg-gray-100 flex overflow-hidden">
+            <div>{email + ' ' + name + ' ' + userId}</div>
             <FileList
                 activeSection={activeSection}
                 setActiveSection={setActiveSection}

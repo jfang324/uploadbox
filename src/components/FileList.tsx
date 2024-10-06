@@ -103,7 +103,7 @@ const FileList = ({
                         variant="destructive"
                         size="sm"
                         onClick={handleDeleteSelected}
-                        disabled={selectedFiles.length === 0}
+                        disabled={selectedFiles.length === 0 || activeSection !== 'my-files'}
                         className="bg-red-500 hover:bg-red-600 text-white"
                     >
                         <Trash2 size={16} className="mr-2" />
