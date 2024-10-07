@@ -1,20 +1,31 @@
-import { withApiAuthRequired } from '@auth0/nextjs-auth0'
+import { withApiAuthRequired, getSession } from '@auth0/nextjs-auth0'
 import { createIfNewUser } from '@/services/userService'
+import { NextRequest, NextResponse } from 'next/server'
+import { NextApiHandler } from 'next'
 
-const POST = withApiAuthRequired(async (req: Request): Promise<Response> => {
-    const requestBody = await req.json()
+/**
+ * POST /api/users
+ *
+ * Return user details associated with the session, creates a new user if they don't exist
+ */
+const unprotectedRouteHandler = async (req: NextRequest, res: NextResponse): Promise<NextResponse> => {
+    const session = await getSession(req, res)
 
-    if (!requestBody || !('email' in requestBody)) {
-        return new Response('Invalid request body', { status: 400 })
+    if (!session) {
+        return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }
 
     try {
-        const user = await createIfNewUser(requestBody.email)
+        const user = session.user
+        const accountDetails = await createIfNewUser(user.email, user.sub)
 
-        return new Response(JSON.stringify(user), { status: 200 })
-    } catch (error: any) {
-        return new Response(JSON.stringify(error.message), { status: 500 })
+        return NextResponse.json(accountDetails, { status: 200 })
+    } catch (error) {
+        console.error(error)
+        return NextResponse.json({ error: 'Error creating user' }, { status: 500 })
     }
-})
+}
+
+const POST = withApiAuthRequired(unprotectedRouteHandler as unknown as NextApiHandler)
 
 export { POST }

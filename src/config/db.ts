@@ -12,6 +12,9 @@ if (!cached) {
     cached = global.db = { connection: null }
 }
 
+/**
+ * Create a connection to the database if it doesn't exist
+ */
 const connectToDb = async () => {
     if (cached.connection) {
         return cached.connection

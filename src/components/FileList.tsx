@@ -10,6 +10,7 @@ import LeftColumn from '@/components/LeftColumn'
 
 /**
  * The file list component. Consisting of a left column, a search bar, and a list of files
+ *
  * @param activeSection - The active section of the left column
  * @param setActiveSection - A function to set the active section of the left column
  * @param searchTerm - The search term entered by the user

@@ -5,19 +5,12 @@ import { useUser } from '@auth0/nextjs-auth0/client'
 export default function Home() {
     const { user, error, isLoading } = useUser()
 
+    if (isLoading) return <div>Loading...</div>
+    if (error) return <div>{error.message}</div>
+
+    // If user is not authenticated, redirect to login page
     return user ? (
-        <div>
-            <div>user.name: {user.name}</div>
-            <div>user.email: {user.email}</div>
-            <div>user.picture: {user.picture}</div>
-            <div>user.sub: {user.sub}</div>
-            <div>user.updated_at: {user.updated_at}</div>
-            <HomePage />
-        </div>
-    ) : isLoading ? (
-        <div>Loading...</div>
-    ) : error ? (
-        <div>Error: {error.message}</div>
+        <HomePage />
     ) : (
         <div className="flex h-screen items-center justify-center">
             <div className="text-center">
@@ -27,7 +20,7 @@ export default function Home() {
                     onClick={() => {
                         window.location.href = '/api/auth/login'
                     }}
-                    className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                 >
                     Log In
                 </button>

@@ -6,6 +6,7 @@ import { Download, Share2 } from 'lucide-react'
 
 /**
  * A single file entry in the file list
+ *
  * @param id - The unique identifier of the file. Likely the hashed filename
  * @param name - The name of the file
  * @param extension - The file extension
