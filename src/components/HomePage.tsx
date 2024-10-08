@@ -66,43 +66,37 @@ const HomePage = () => {
         init()
     }, [user, error, isLoading])
 
-    //keeps visible files updated
-    useEffect(() => {
-        filterFiles(searchTerm, fileTypeFilter)
-    }, [searchTerm, fileTypeFilter, files])
-
     //calculates the available file types
     const fileTypes = useMemo(() => {
         const types = new Set(files.map((file) => file.extension).filter(Boolean))
         return ['all', ...Array.from(types)]
     }, [files])
 
-    /**
-     * Filters the files based on the search term and file type
-     *
-     * @param term - The search term
-     * @param type - The file type filter
-     */
-    const filterFiles = (term: string, type: string) => {
-        let filteredFiles = files
+    //keeps visible files updated
+    useEffect(() => {
+        const filterFiles = (term: string, type: string) => {
+            let filteredFiles = files
 
-        if (term !== '') {
-            try {
-                const regex = new RegExp(term, 'i')
-                filteredFiles = filteredFiles.filter(
-                    (file) => regex.test(file.name) || regex.test(file.extension) || regex.test(file.owner)
-                )
-            } catch (error) {
-                console.error('Invalid regex:', error)
+            if (term !== '') {
+                try {
+                    const regex = new RegExp(term, 'i')
+                    filteredFiles = filteredFiles.filter(
+                        (file) => regex.test(file.name) || regex.test(file.extension) || regex.test(file.owner)
+                    )
+                } catch (error) {
+                    console.error('Invalid regex:', error)
+                }
             }
+
+            if (type !== 'all') {
+                filteredFiles = filteredFiles.filter((file) => file.extension === type)
+            }
+
+            setVisibleFiles(filteredFiles)
         }
 
-        if (type !== 'all') {
-            filteredFiles = filteredFiles.filter((file) => file.extension === type)
-        }
-
-        setVisibleFiles(filteredFiles)
-    }
+        filterFiles(searchTerm, fileTypeFilter)
+    }, [searchTerm, fileTypeFilter, files])
 
     /**
      * Handles the file upload by triggering the popup
@@ -147,7 +141,7 @@ const HomePage = () => {
      * @param id - The mongoId of the file
      */
     const handleSelectFile = (id: string) => {
-        let existingSet = new Set(selectedFiles)
+        const existingSet = new Set(selectedFiles)
 
         if (existingSet.has(id)) {
             existingSet.delete(id)
