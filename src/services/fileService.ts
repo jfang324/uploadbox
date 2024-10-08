@@ -16,11 +16,12 @@ export const createFile = async (
     extension: string,
     size: number,
     ownerId: string
-): Promise<FileDocument | void> => {
-    await connectToDb()
-    if (!name || !extension || !size || !ownerId) {
-        throw new Error('Missing required parameters')
+): Promise<FileDocument> => {
+    if (!name || !extension || typeof size !== 'number' || size < 0 || !ownerId) {
+        throw new Error('Invalid or missing required parameters')
     }
+
+    await connectToDb()
 
     try {
         const file = new File({
@@ -33,8 +34,31 @@ export const createFile = async (
 
         return file
     } catch (error) {
-        console.error(error)
-        throw new Error('Error creating file')
+        console.error('Error saving file to database:', error)
+        throw new Error('Failed to save file to database')
+    }
+}
+
+/**
+ * Deletes the file with the given id
+ *
+ * @param fileId - The mongoId of the file
+ * @returns The result from of the delete operation
+ */
+export const deleteFile = async (fileId: string) => {
+    if (!fileId) {
+        throw new Error('Missing fileId')
+    }
+
+    await connectToDb()
+
+    try {
+        const response = await File.deleteOne({ _id: fileId })
+
+        return response
+    } catch (error) {
+        console.error('Error deleting file in database:', error)
+        throw new Error('Failed to delete file from database')
     }
 }
 
@@ -44,17 +68,47 @@ export const createFile = async (
  * @param userId - The mongoId of the user
  * @returns - An array of file documents
  */
-export const getUserFiles = async (userId: string): Promise<FileDocument[]> => {
-    await connectToDb()
+export const getUserFiles = async (userId: string): Promise<(FileDocument & { owner: string })[]> => {
     if (!userId) {
         throw new Error('Missing userId')
     }
 
-    try {
-        const files = await File.find({ ownerId: userId })
+    await connectToDb()
 
-        return files
+    try {
+        const files = await File.find({ ownerId: userId }).populate({
+            path: 'ownerId',
+            select: 'name email',
+        })
+
+        const populatedFiles = files.map((file) => {
+            return {
+                ...file._doc,
+                owner: (file.ownerId.name !== undefined ? file.ownerId.name : file.ownerId.email) as string,
+                ownerId: file.ownerId._id,
+            }
+        })
+
+        return populatedFiles
     } catch (error) {
-        throw new Error('Error getting user files')
+        console.error('Error getting user files:', error)
+        throw new Error('Failed to get user files')
+    }
+}
+
+export const getFileById = async (fileId: string): Promise<FileDocument> => {
+    if (!fileId) {
+        throw new Error('Missing fileId')
+    }
+
+    await connectToDb()
+
+    try {
+        const file = await File.findOne({ _id: fileId })
+
+        return file
+    } catch (error) {
+        console.error('Error getting file:', error)
+        throw new Error('Failed to get file')
     }
 }

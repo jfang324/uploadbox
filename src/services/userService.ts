@@ -5,16 +5,16 @@ import User from '@/models/User'
 /**
  * Create a new user if they don't exist and return the user document
  *
- * @param email - The email address of the user
- * @param id - The id of the user
+ * @param id - The id of the user. This is user.sub from auth0
+ * @param name - The name of the user
  * @returns The user document
  */
-export const createIfNewUser = async (email: string, id: string): Promise<UserDocument | void> => {
-    await connectToDb()
+export const createIfNewUser = async (id: string, email: string): Promise<UserDocument> => {
     if (!email || !id) {
         throw new Error('Missing required parameters')
     }
 
+    await connectToDb()
     const existingUser = await User.findOne({
         id: id,
     })
@@ -31,9 +31,43 @@ export const createIfNewUser = async (email: string, id: string): Promise<UserDo
 
             return newUser
         } catch (error) {
-            console.error(error)
-            throw new Error('Error creating user')
+            console.error('Error creating new user:', error)
+            throw new Error('Error creating new user')
         }
+    }
+}
+
+/**
+ * Change the name of the user with the given id
+ *
+ * @param id - The id of the user. This is user.sub from auth0
+ * @param name - The new name of the user
+ * @returns The updated user document
+ */
+export const changeUserName = async (id: string, name: string): Promise<UserDocument> => {
+    if (!id || !name) {
+        throw new Error('Missing required parameters')
+    }
+
+    await connectToDb()
+
+    try {
+        const user = await User.findOneAndUpdate(
+            {
+                id: id,
+            },
+            {
+                name: name,
+            },
+            {
+                new: true,
+            }
+        )
+
+        return user
+    } catch (error) {
+        console.error('Error changing user name:', error)
+        throw new Error('Error changing user name')
     }
 }
 
@@ -43,11 +77,12 @@ export const createIfNewUser = async (email: string, id: string): Promise<UserDo
  * @param id - The id of the user
  * @returns The user document
  */
-export const getUserById = async (id: string): Promise<UserDocument | void> => {
-    await connectToDb()
+export const getUserById = async (id: string): Promise<UserDocument> => {
     if (!id) {
-        throw new Error('No user id provided')
+        throw new Error('Missing id')
     }
+
+    await connectToDb()
 
     try {
         const user = await User.findOne({
@@ -56,6 +91,7 @@ export const getUserById = async (id: string): Promise<UserDocument | void> => {
 
         return user
     } catch (error) {
+        console.error('Error getting user:', error)
         throw new Error('Error getting user')
     }
 }

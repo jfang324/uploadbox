@@ -16,13 +16,13 @@ import { Download, Share2 } from 'lucide-react'
  * @param onSelect - A function to handle file selection
  */
 interface FileEntryProps {
-    id: number
+    id: string
     name: string
     extension: string
-    size: string
+    size: number
     owner: string
     isSelected: boolean
-    onSelect: (id: number) => void
+    onSelect: (id: string) => void
 }
 
 const FileEntry = ({ id, name, extension, size, owner, isSelected, onSelect }: FileEntryProps) => {
@@ -42,7 +42,7 @@ const FileEntry = ({ id, name, extension, size, owner, isSelected, onSelect }: F
                             {extension ? `.${extension}` : ''}
                         </h2>
                         <p className="text-sm text-gray-500">
-                            {size} • Owned by {owner}
+                            {(size / (1024 * 1024)).toFixed(2)} MB • Owned by {owner}
                         </p>
                     </div>
                 </div>

@@ -2,59 +2,47 @@
 
 import { useState, useRef, useMemo, useEffect } from 'react'
 import { useUser } from '@auth0/nextjs-auth0/client'
-import { UserDocument } from '@/interfaces/UserDocument'
-import FileList from '@/components/FileList'
+import { FileDocument } from '@/interfaces/FileDocument'
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from '@/components/ui/dialog'
-import { Label } from '@/components/ui/label'
-import { Button } from './ui/button'
-import { Input } from '@/components/ui/input'
-import { File } from 'lucide-react'
-import { on } from 'events'
-import { mongo, set } from 'mongoose'
-
-// Mock data for the file list
-const initialFiles = [
-    { id: 1, name: 'Document', extension: 'docx', size: '2.5 MB', owner: 'John Doe' },
-    { id: 2, name: 'Spreadsheet', extension: 'xlsx', size: '1.8 MB', owner: 'Jane Smith' },
-    { id: 3, name: 'Presentation', extension: 'pptx', size: '5.2 MB', owner: 'Mike Johnson' },
-    { id: 4, name: 'Image', extension: 'jpg', size: '3.7 MB', owner: 'Sarah Williams' },
-    { id: 5, name: 'Video', extension: 'mp4', size: '15.6 MB', owner: 'Chris Brown' },
-    { id: 6, name: 'Text File', extension: 'txt', size: '0.1 MB', owner: 'Emily Davis' },
-    { id: 7, name: 'PDF Document', extension: 'pdf', size: '4.3 MB', owner: 'Alex Johnson' },
-    // Adding more files to demonstrate scrolling
-    ...Array.from({ length: 20 }, (_, i) => ({
-        id: i + 9,
-        name: `File ${i + 9}`,
-        extension: 'txt',
-        size: '1.0 MB',
-        owner: 'Test User',
-    })),
-]
+    retrieveUserDetails,
+    retrieveUserFiles,
+    uploadFile,
+    deleteFile,
+    changeUserName,
+    initializeUserDetails,
+} from '@/lib/utils'
+import FileList from '@/components/FileList'
+import UploadDialog from './UploadDialogue'
+import { SettingsDialog } from './SettingsDialogue'
+import { Button } from '@/components/ui/button'
 
 const HomePage = () => {
+    //state associated with the account
     const { user, error, isLoading } = useUser()
-    const [mongoId, setMongoId] = useState<string | undefined>()
-    const [email, setEmail] = useState<string | undefined>()
-    const [name, setName] = useState<string | undefined>()
+    const [mongoId, setMongoId] = useState<string>('')
+    const [name, setName] = useState<string>('')
+    const [email, setEmail] = useState<string>('')
 
-    const fileUploadRef = useRef<HTMLButtonElement>(null)
+    //state & refs associated with file uploads
+    const fileUploadTriggerRef = useRef<HTMLButtonElement>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)
     const [file, setFile] = useState<File | undefined>()
 
-    const [files, setFiles] = useState(initialFiles)
+    //refs associated with the account settings
+    const settingsTriggerRef = useRef<HTMLButtonElement>(null)
+    const settingsInputRef = useRef<HTMLInputElement>(null)
+
+    //state associated with the file list & visibility
+    const [files, setFiles] = useState<(FileDocument & { owner: string })[]>([])
     const [searchTerm, setSearchTerm] = useState('')
     const [fileTypeFilter, setFileTypeFilter] = useState('all')
-    const [selectedFiles, setSelectedFiles] = useState<number[]>([])
+    const [visibleFiles, setVisibleFiles] = useState<(FileDocument & { owner: string })[]>([])
+
+    //state associated with file selection
+    const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set())
     const [activeSection, setActiveSection] = useState('my-files')
 
+    //initialize user details and files
     useEffect(() => {
         const init = async () => {
             if (isLoading || error) {
@@ -62,52 +50,47 @@ const HomePage = () => {
             }
 
             if (user) {
-                const response = await fetch('/api/users', {
-                    method: 'POST',
-                })
-
-                if (response.status === 200) {
-                    const userDetails: UserDocument = await response.json()
-
-                    setMongoId(userDetails._id as string)
-                    setEmail(userDetails.email)
-                    setName(userDetails.name || userDetails.email)
-                } else {
-                    alert('Error fetching user details')
+                try {
+                    const userDetails = await retrieveUserDetails()
+                    initializeUserDetails(setMongoId, setName, setEmail, userDetails)
+                    const userFiles = await retrieveUserFiles(userDetails._id as string)
+                    setFiles(userFiles)
+                    setVisibleFiles(userFiles)
+                } catch (error) {
+                    alert(error)
                 }
+            } else {
+                alert('Error fetching user details')
             }
         }
-
         init()
     }, [user, error, isLoading])
 
+    //keeps visible files updated
+    useEffect(() => {
+        filterFiles(searchTerm, fileTypeFilter)
+    }, [searchTerm, fileTypeFilter, files])
+
+    //calculates the available file types
     const fileTypes = useMemo(() => {
         const types = new Set(files.map((file) => file.extension).filter(Boolean))
         return ['all', ...Array.from(types)]
     }, [files])
 
-    const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const term = event.target.value
-        setSearchTerm(term)
-        filterFiles(term, fileTypeFilter)
-    }
-
-    const handleFileTypeFilter = (type: string) => {
-        setFileTypeFilter(type)
-        filterFiles(searchTerm, type)
-    }
-
+    /**
+     * Filters the files based on the search term and file type
+     *
+     * @param term - The search term
+     * @param type - The file type filter
+     */
     const filterFiles = (term: string, type: string) => {
-        let filteredFiles = initialFiles
+        let filteredFiles = files
 
         if (term !== '') {
             try {
                 const regex = new RegExp(term, 'i')
                 filteredFiles = filteredFiles.filter(
-                    (file) =>
-                        regex.test(file.name) ||
-                        (file.extension && regex.test(file.extension)) ||
-                        regex.test(file.owner)
+                    (file) => regex.test(file.name) || regex.test(file.extension) || regex.test(file.owner)
                 )
             } catch (error) {
                 console.error('Invalid regex:', error)
@@ -118,53 +101,108 @@ const HomePage = () => {
             filteredFiles = filteredFiles.filter((file) => file.extension === type)
         }
 
-        setFiles(filteredFiles)
+        setVisibleFiles(filteredFiles)
     }
 
-    const handleSelectFile = (id: number) => {
-        setSelectedFiles((prev) => (prev.includes(id) ? prev.filter((fileId) => fileId !== id) : [...prev, id]))
-    }
-
-    const handleDeleteSelected = () => {
-        const remainingFiles = files.filter((file) => !selectedFiles.includes(file.id))
-        setFiles(remainingFiles)
-        setSelectedFiles([])
-    }
-
+    /**
+     * Handles the file upload by triggering the popup
+     */
     const handleUpload = () => {
-        fileUploadRef.current?.click()
+        fileUploadTriggerRef.current?.click()
     }
 
+    /**
+     * Updates the file state when a file is selected
+     *
+     * @param event - The file change event from the file upload input
+     */
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setFile(event.target.files?.[0])
     }
 
-    const handleSubmit = async (event: React.MouseEvent<HTMLButtonElement>) => {
-        const formData = new FormData()
-
+    /**
+     * Handles the actual file upload and refreshing files
+     */
+    const handleSubmit = async () => {
         if (mongoId && file) {
-            formData.append('mongoId', mongoId as string)
-            formData.append('file', file as File)
-
-            const response = await fetch('/api/files', {
-                method: 'POST',
-                body: formData,
-            })
-
-            console.log(formData)
-
-            if (response.status === 200) {
-                const savedFile = await response.json()
-
-                console.log(savedFile)
-
-                window.alert(`File uploaded successfully! File ID: ${savedFile._id}`)
+            try {
+                const fileDetails = await uploadFile(file)
+                if (fileDetails) {
+                    const updatedFiles = await retrieveUserFiles(mongoId)
+                    if (updatedFiles) {
+                        setFiles(updatedFiles)
+                    }
+                }
+            } catch (error) {
+                alert(error)
             }
         } else {
-            window.alert('Please fill in all fields')
+            alert('Please fill in all fields')
         }
     }
 
+    /**
+     * Handles file selection
+     *
+     * @param id - The mongoId of the file
+     */
+    const handleSelectFile = (id: string) => {
+        let existingSet = new Set(selectedFiles)
+
+        if (existingSet.has(id)) {
+            existingSet.delete(id)
+        } else {
+            existingSet.add(id)
+        }
+
+        setSelectedFiles(existingSet)
+    }
+
+    /**
+     * Handles file deletion
+     */
+    const handleDeleteSelected = async () => {
+        if (mongoId && selectedFiles.size > 0) {
+            try {
+                await Promise.all(Array.from(selectedFiles).map((fileId) => deleteFile(fileId)))
+                const updatedFiles = await retrieveUserFiles(mongoId)
+                if (updatedFiles) {
+                    setFiles(updatedFiles)
+                }
+                setSelectedFiles(new Set())
+            } catch (error) {
+                alert(error)
+            }
+        } else {
+            alert(`Error deleting files. ${selectedFiles.size} files selected. mongoId: ${mongoId}`)
+        }
+    }
+
+    /**
+     * Handles user name change
+     */
+    const handleChangeName = async () => {
+        const name = settingsInputRef.current?.value
+        if (name) {
+            try {
+                const userDetails = await changeUserName(name)
+                if (userDetails) {
+                    initializeUserDetails(setMongoId, setName, setEmail, userDetails)
+                    const userFiles = await retrieveUserFiles(userDetails._id as string)
+                    if (userFiles) {
+                        setFiles(userFiles)
+                        setVisibleFiles(userFiles)
+                    }
+                }
+            } catch (error) {
+                alert(error)
+            }
+        }
+    }
+
+    /**
+     * Handles user logout
+     */
     const handleLogout = () => {
         window.location.href = '/api/auth/logout'
     }
@@ -175,75 +213,41 @@ const HomePage = () => {
                 activeSection={activeSection}
                 setActiveSection={setActiveSection}
                 searchTerm={searchTerm}
-                handleSearch={handleSearch}
+                handleSearch={(e) => setSearchTerm(e.target.value)}
                 fileTypeFilter={fileTypeFilter}
-                handleFileTypeFilter={handleFileTypeFilter}
+                handleFileTypeFilter={(type) => setFileTypeFilter(type)}
                 fileTypes={fileTypes}
-                files={files}
+                files={visibleFiles}
                 selectedFiles={selectedFiles}
                 handleSelectFile={handleSelectFile}
                 handleDeleteSelected={handleDeleteSelected}
                 handleUpload={handleUpload}
                 handleLogout={handleLogout}
             />
-            <Dialog>
-                <DialogTrigger asChild>
-                    <Button ref={fileUploadRef} className="hidden">
-                        Upload
-                    </Button>
-                </DialogTrigger>
-                <DialogContent className="bg-white sm:max-w-[425px]">
-                    <DialogHeader>
-                        <DialogTitle>Upload File</DialogTitle>
-                    </DialogHeader>
-                    <form className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="userId" className="text-sm font-medium text-gray-700">
-                                User ID
-                            </Label>
-                            <Input
-                                id="userId"
-                                type="text"
-                                disabled={true}
-                                value={mongoId}
-                                className="bg-gray-100 text-gray-600 cursor-not-allowed"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="file" className="text-sm font-medium text-gray-700">
-                                File
-                            </Label>
-                            <div className="flex items-center space-x-2">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    className="text-blue-600 hover:text-blue-500"
-                                    onClick={() => fileInputRef.current?.click()}
-                                >
-                                    <File className="h-4 w-4 mr-2" />
-                                    Choose File
-                                </Button>
-                                <span className="text-sm text-gray-500">{file ? file.name : 'No file chosen'}</span>
-                            </div>
-                            <Input
-                                id="file"
-                                type="file"
-                                ref={fileInputRef}
-                                className="hidden"
-                                onChange={handleFileChange}
-                            />
-                        </div>
-                        <Button
-                            type="button"
-                            className="w-full border bg-blue-600 text-white hover:bg-blue-700"
-                            onClick={handleSubmit}
-                        >
-                            Upload
-                        </Button>
-                    </form>
-                </DialogContent>
-            </Dialog>
+            <UploadDialog
+                mongoId={mongoId}
+                file={file}
+                fileInputRef={fileInputRef}
+                fileUploadTriggerRef={fileUploadTriggerRef}
+                handleFileChange={handleFileChange}
+                handleSubmit={handleSubmit}
+            />
+            <SettingsDialog
+                mongoId={mongoId}
+                name={name}
+                email={email}
+                onSave={handleChangeName}
+                settingsTriggerRef={settingsTriggerRef}
+                settingsInputRef={settingsInputRef}
+            />
+            <Button
+                onClick={() => {
+                    settingsTriggerRef.current?.click()
+                }}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+                Edit Account Settings
+            </Button>
         </div>
     )
 }

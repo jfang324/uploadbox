@@ -7,6 +7,7 @@ import { Search, Trash2, ListCollapse, List } from 'lucide-react'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import FileEntry from '@/components/FileEntry'
 import LeftColumn from '@/components/LeftColumn'
+import { FileDocument } from '@/interfaces/FileDocument'
 
 /**
  * The file list component. Consisting of a left column, a search bar, and a list of files
@@ -33,9 +34,9 @@ interface FileListProps {
     fileTypeFilter: string
     handleFileTypeFilter: (type: string) => void
     fileTypes: string[]
-    files: Array<{ id: number; name: string; extension: string; size: string; owner: string }>
-    selectedFiles: number[]
-    handleSelectFile: (id: number) => void
+    files: Array<FileDocument & { owner: string }>
+    selectedFiles: Set<string>
+    handleSelectFile: (id: string) => void
     handleDeleteSelected: () => void
     handleUpload: () => void
     handleLogout: () => void
@@ -104,7 +105,7 @@ const FileList = ({
                         variant="destructive"
                         size="sm"
                         onClick={handleDeleteSelected}
-                        disabled={selectedFiles.length === 0 || activeSection !== 'my-files'}
+                        disabled={selectedFiles.size === 0 || activeSection !== 'my-files'}
                         className="bg-red-500 hover:bg-red-600 text-white"
                     >
                         <Trash2 size={16} className="mr-2" />
@@ -114,15 +115,15 @@ const FileList = ({
             </div>
             <div className="flex-1 overflow-y-auto bg-white">
                 <ul className="divide-y divide-gray-200">
-                    {files.map((file) => (
+                    {files.map((file: FileDocument & { owner: string }) => (
                         <FileEntry
-                            key={file.id}
-                            id={file.id}
+                            key={file?._id as string}
+                            id={file?._id as string}
                             name={file.name}
                             extension={file.extension}
                             size={file.size}
                             owner={file.owner}
-                            isSelected={selectedFiles.includes(file.id)}
+                            isSelected={selectedFiles.has(file._id as string)}
                             onSelect={handleSelectFile}
                         />
                     ))}

@@ -14,4 +14,6 @@ const shareSchema: Schema<ShareDocument> = new Schema({
     },
 })
 
+shareSchema.index({ fileId: 1, userId: 1 }, { unique: true })
+
 export default mongoose.models.Share || mongoose.model<ShareDocument>('Share', shareSchema)
