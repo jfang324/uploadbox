@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { NextApiHandler } from 'next'
 import { createFile } from '@/services/fileService'
 import { getUserById } from '@/services/userService'
+import { uploadS3File } from '@/services/s3Service'
 
 /**
  * POST /api/files
@@ -29,6 +30,14 @@ const postHandler = async (req: NextRequest, res: NextResponse): Promise<NextRes
         }
 
         const newFile = await createFile(file.name, file.type, file.size, user._id.toString())
+        if (!newFile || !newFile._id) {
+            return NextResponse.json({ error: 'Failed to create file in database' }, { status: 500 })
+        }
+
+        const uploadS3Result = await uploadS3File(newFile._id.toString(), file)
+        if (!uploadS3Result) {
+            return NextResponse.json({ error: 'Failed to upload file to S3' }, { status: 500 })
+        }
 
         return NextResponse.json(newFile, { status: 200 })
     } catch (error: any) {

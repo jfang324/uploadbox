@@ -100,3 +100,20 @@ export const getSharedFiles = async (userId: string): Promise<(FileDocument & { 
         throw new Error('Failed to get shared files')
     }
 }
+
+export const isShared = async (userId: string, fileId: string): Promise<boolean> => {
+    if (!userId || !fileId) {
+        throw new Error('Missing required parameters')
+    }
+
+    await connectToDb()
+
+    try {
+        const share = await Share.findOne({ fileId: fileId, userId: userId })
+
+        return !!share
+    } catch (error) {
+        console.error('Error checking if file is shared:', error)
+        throw new Error('Error checking if file is shared')
+    }
+}

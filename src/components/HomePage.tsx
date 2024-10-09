@@ -12,6 +12,7 @@ import {
     initializeUserDetails,
     shareFile,
     unShareFile,
+    retrievePresignedUrl,
 } from '@/lib/utils'
 import FileList from '@/components/FileList'
 import UploadDialog from './UploadDialog'
@@ -239,8 +240,22 @@ const HomePage = () => {
         shareTriggerRef.current?.click()
     }
 
+    /**
+     * Gets the presigned url for the file and downloads it
+     *
+     * @param id - The mongoId of the file
+     */
     const handleDownload = async (id: string) => {
-        alert(`downloading file ${id}`)
+        if (id) {
+            try {
+                const presignedUrl = await retrievePresignedUrl(id)
+                if (presignedUrl) {
+                    window.open(presignedUrl)
+                }
+            } catch (error) {
+                alert(error)
+            }
+        }
     }
 
     /**

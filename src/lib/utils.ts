@@ -212,3 +212,21 @@ export const changeUserName = async (name: string) => {
         throw new Error(`Error changing user name. Status: ${response.status}`)
     }
 }
+
+export const retrievePresignedUrl = async (fileId: string) => {
+    if (!fileId) {
+        throw new Error('Missing fileId')
+    }
+
+    const response = await fetch(`/api/files/${fileId}`, {
+        method: 'GET',
+    })
+
+    if (response.status === 200) {
+        const presignedUrl = await response.json()
+
+        return presignedUrl
+    } else {
+        throw new Error(`Error retrieving presigned URL. Status: ${response.status}`)
+    }
+}
