@@ -63,6 +63,34 @@ npm run dev
 ```
 
 ## Gallery & Demonstrations
+<img src='https://github.com/user-attachments/assets/6978769b-731f-436b-9a7b-fbf183f32ecf'> </img>
+_Initial login page_
+
+<img src='https://github.com/user-attachments/assets/5d5936e5-7236-40e2-95b7-34fe2d64728b'> </img>
+_Auth0 login page_
+
+<img src='https://github.com/user-attachments/assets/4beb37e0-4534-4016-9aab-9381763767f2'> </img>
+_Homepage_
+
+<img src='https://github.com/user-attachments/assets/fd2178dc-2316-4c96-997f-17fabf3a7188' width="auto" height="500"> </img>
+
+_Mobile homepage_
+
+<img src='https://github.com/user-attachments/assets/d5090cd0-f952-48b5-8a79-c7dea8a08c75'> </img>
+_File upload pop-up_
+
+<img src='https://github.com/user-attachments/assets/88bcbd61-2f02-40da-91f9-61b3036b1466'> </img>
+_Options_
+
+<img src='https://github.com/user-attachments/assets/c032a7dc-e8b0-494b-85c8-0c162d2bd34d'> </img>
+_File sharing_
+
+<img src='https://github.com/user-attachments/assets/7b4d3d2f-ed28-4843-8df8-18c88741f472' width="auto" height="500"> </img>
+
+_Mobile sharing_
+
+![Screenshot 2024-10-09 033150](https://github.com/user-attachments/assets/19718b49-06e1-4c09-a7c3-610003179026)
+_Account settings pop-up_
 
 ## Contact
 
