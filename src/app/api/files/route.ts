@@ -16,7 +16,7 @@ const postHandler = async (req: NextRequest, res: NextResponse): Promise<NextRes
             return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
         }
 
-        const formData: FormData = await req.formData()
+        const formData = await req.formData()
         const file = formData.get('file')
 
         if (!(file instanceof File)) {

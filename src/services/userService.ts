@@ -95,3 +95,28 @@ export const getUserById = async (id: string): Promise<UserDocument> => {
         throw new Error('Error getting user')
     }
 }
+
+/**
+ * Get a user by their email
+ *
+ * @param email - The email of the user
+ * @returns The user document
+ */
+export const getUserByEmail = async (email: string): Promise<UserDocument> => {
+    if (!email) {
+        throw new Error('Missing email')
+    }
+
+    await connectToDb()
+
+    try {
+        const user = await User.findOne({
+            email: email,
+        })
+
+        return user
+    } catch (error) {
+        console.error('Error getting user:', error)
+        throw new Error('Error getting user')
+    }
+}

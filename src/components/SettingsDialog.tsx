@@ -7,22 +7,22 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { User, Mail, Key } from 'lucide-react'
 
 interface SettingsDialogProps {
-    mongoId: string
-    name: string
-    email: string
-    onSave: () => void
+    userMongoId: string
+    userName: string
+    userEmail: string
     settingsTriggerRef: React.RefObject<HTMLButtonElement>
     settingsInputRef: React.RefObject<HTMLInputElement>
+    handleChangeSettings: (newName: string) => void
 }
 
-export function SettingsDialog({
-    mongoId,
-    name,
-    email,
-    onSave,
+const SettingsDialog = ({
+    userMongoId,
+    userName,
+    userEmail,
     settingsTriggerRef,
     settingsInputRef,
-}: SettingsDialogProps) {
+    handleChangeSettings,
+}: SettingsDialogProps) => {
     return (
         <Dialog>
             <DialogTrigger asChild>
@@ -38,7 +38,9 @@ export function SettingsDialog({
                     className="space-y-4"
                     onSubmit={(e) => {
                         e.preventDefault()
-                        onSave()
+                        const formData = new FormData(e.currentTarget)
+                        const newName = formData.get('name') as string
+                        handleChangeSettings(newName)
                     }}
                 >
                     <div className="space-y-2">
@@ -48,10 +50,9 @@ export function SettingsDialog({
                         <div className="flex items-center space-x-2">
                             <Key className="h-4 w-4 text-gray-500" />
                             <Input
-                                id="userId"
                                 type="text"
                                 disabled={true}
-                                value={mongoId}
+                                value={userMongoId}
                                 className="bg-gray-100 text-gray-600 cursor-not-allowed"
                             />
                         </div>
@@ -64,9 +65,10 @@ export function SettingsDialog({
                             <User className="h-4 w-4 text-gray-500" />
                             <Input
                                 id="name"
+                                name="name"
                                 ref={settingsInputRef}
                                 type="text"
-                                placeholder={name}
+                                placeholder={userName}
                                 className="bg-white text-gray-800"
                             />
                         </div>
@@ -81,7 +83,7 @@ export function SettingsDialog({
                                 id="email"
                                 type="email"
                                 disabled={true}
-                                value={email}
+                                value={userEmail}
                                 className="bg-gray-100 text-gray-600 cursor-not-allowed"
                             />
                         </div>
@@ -94,3 +96,5 @@ export function SettingsDialog({
         </Dialog>
     )
 }
+
+export default SettingsDialog

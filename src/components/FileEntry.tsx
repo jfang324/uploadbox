@@ -4,17 +4,6 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
 import { Download, Share2 } from 'lucide-react'
 
-/**
- * A single file entry in the file list
- *
- * @param id - The unique identifier of the file. Likely the hashed filename
- * @param name - The name of the file
- * @param extension - The file extension
- * @param size - The size of the file in bytes
- * @param owner - The owner of the file
- * @param isSelected - Whether the file is selected for deletion
- * @param onSelect - A function to handle file selection
- */
 interface FileEntryProps {
     id: string
     name: string
@@ -22,10 +11,22 @@ interface FileEntryProps {
     size: number
     owner: string
     isSelected: boolean
-    onSelect: (id: string) => void
+    triggerShare: (fileId: string, fileName: string) => void
+    handleSelect: (id: string) => void
+    handleDownload: (fileId: string) => void
 }
 
-const FileEntry = ({ id, name, extension, size, owner, isSelected, onSelect }: FileEntryProps) => {
+const FileEntry = ({
+    id,
+    name,
+    extension,
+    size,
+    owner,
+    isSelected,
+    triggerShare,
+    handleSelect,
+    handleDownload,
+}: FileEntryProps) => {
     return (
         <li className="p-4 hover:bg-gray-50 transition duration-150 ease-in-out">
             <div className="flex items-center justify-between">
@@ -34,7 +35,7 @@ const FileEntry = ({ id, name, extension, size, owner, isSelected, onSelect }: F
                         className="my-auto"
                         id={`file-${id}`}
                         checked={isSelected}
-                        onCheckedChange={() => onSelect(id)}
+                        onCheckedChange={() => handleSelect(id)}
                     />
                     <div>
                         <h2 className="text-lg font-semibold text-gray-800">
@@ -47,11 +48,19 @@ const FileEntry = ({ id, name, extension, size, owner, isSelected, onSelect }: F
                     </div>
                 </div>
                 <div className="flex flex-col md:flex-row md:space-x-2 space-y-2 md:space-y-0">
-                    <Button variant="outline" className="flex items-center space-x-1">
+                    <Button
+                        variant="outline"
+                        className="flex items-center space-x-1"
+                        onClick={() => handleDownload(id)}
+                    >
                         <Download size={16} />
                         <span>Download</span>
                     </Button>
-                    <Button variant="outline" className="flex items-center space-x-1">
+                    <Button
+                        variant="outline"
+                        className="flex items-center space-x-1"
+                        onClick={() => triggerShare(id, `${name}.${extension}`)}
+                    >
                         <Share2 size={16} />
                         <span>Share</span>
                     </Button>

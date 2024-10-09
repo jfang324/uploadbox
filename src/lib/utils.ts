@@ -55,12 +55,15 @@ export const initializeUserDetails = (
  * @param userId - The mongoId of the user
  * @returns An array of file documents + owner
  */
-export const retrieveUserFiles = async (userId: string): Promise<(FileDocument & { owner: string })[]> => {
+export const retrieveFiles = async (
+    userId: string,
+    activeSection: string
+): Promise<(FileDocument & { owner: string })[]> => {
     if (!userId) {
         throw new Error('Missing userId')
     }
 
-    const response = await fetch(`/api/users/${userId}/files`, {
+    const response = await fetch(`/api/users/${userId}/${activeSection === 'my-files' ? 'files' : 'shared'}`, {
         method: 'GET',
     })
 
@@ -126,7 +129,65 @@ export const deleteFile = async (fileId: string) => {
 }
 
 /**
- * Change the name of the user with the given id
+ * Share a file with the given email
+ *
+ * @param fileId - The mongoId of the file
+ * @param recipientEmail - The email of the recipient
+ * @returns The share document
+ */
+export const shareFile = async (fileId: string, recipientEmail: string) => {
+    if (!fileId || !recipientEmail) {
+        throw new Error('Missing required parameters')
+    }
+
+    const response = await fetch('/api/shares', {
+        method: 'POST',
+        body: JSON.stringify({
+            fileId: fileId,
+            recipientEmail: recipientEmail,
+        }),
+    })
+
+    if (response.status === 200) {
+        const share = await response.json()
+
+        return share
+    } else {
+        throw new Error(`Error sharing file. Status: ${response.status}`)
+    }
+}
+
+/**
+ * Unshare a file with the given email
+ *
+ * @param fileId - The mongoId of the file
+ * @param recipientEmail - The email of the recipient
+ * @returns The share document
+ */
+export const unShareFile = async (fileId: string, recipientEmail: string) => {
+    if (!fileId || !recipientEmail) {
+        throw new Error('Missing required parameters')
+    }
+
+    const response = await fetch('/api/shares', {
+        method: 'DELETE',
+        body: JSON.stringify({
+            fileId: fileId,
+            recipientEmail: recipientEmail,
+        }),
+    })
+
+    if (response.status === 200) {
+        const share = await response.json()
+
+        return share
+    } else {
+        throw new Error(`Error unsharing file. Status: ${response.status}`)
+    }
+}
+
+/**
+ * Change the name of the current users account
  *
  * @param name - The new name of the user
  * @returns The updated user document

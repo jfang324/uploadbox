@@ -5,37 +5,27 @@ import { Button } from './ui/button'
 import { Input } from '@/components/ui/input'
 import { File } from 'lucide-react'
 
-/**
- * The upload dialogue component
- *
- * @param mongoId - The mongoId of the user
- * @param file - The file to upload
- * @param fileInputRef - A ref object for the file input
- * @param fileUploadTriggerRef - A ref object for the file upload button
- * @param handleFileChange - A function to handle file change
- * @param handleSubmit - A function to handle file upload
- */
 interface UploadDialogProps {
-    mongoId: string | undefined
+    userMongoId: string
     file: File | undefined
-    fileInputRef: React.RefObject<HTMLInputElement>
-    fileUploadTriggerRef: React.RefObject<HTMLButtonElement>
     handleFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void
-    handleSubmit: (event: React.MouseEvent<HTMLButtonElement>) => Promise<void>
+    handleUpload: (event: React.MouseEvent<HTMLButtonElement>) => Promise<void>
+    inputRef: React.RefObject<HTMLInputElement>
+    triggerRef: React.RefObject<HTMLButtonElement>
 }
 
-const UploadDialog: React.FC<UploadDialogProps> = ({
-    mongoId,
+const UploadDialog = ({
+    userMongoId,
     file,
-    fileInputRef,
-    fileUploadTriggerRef,
     handleFileChange,
-    handleSubmit,
-}) => {
+    handleUpload,
+    inputRef,
+    triggerRef,
+}: UploadDialogProps) => {
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <Button ref={fileUploadTriggerRef} className="hidden">
+                <Button ref={triggerRef} className="hidden">
                     Upload
                 </Button>
             </DialogTrigger>
@@ -52,7 +42,7 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
                             id="userId"
                             type="text"
                             disabled={true}
-                            value={mongoId}
+                            value={userMongoId}
                             className="bg-gray-100 text-gray-600 cursor-not-allowed"
                         />
                     </div>
@@ -66,25 +56,19 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
                                 variant="outline"
                                 size="sm"
                                 className="text-blue-600 hover:text-blue-500"
-                                onClick={() => fileInputRef.current?.click()}
+                                onClick={() => inputRef.current?.click()}
                             >
                                 <File className="h-4 w-4 mr-2" />
                                 Choose File
                             </Button>
                             <span className="text-sm text-gray-500">{file ? file.name : 'No file chosen'}</span>
                         </div>
-                        <Input
-                            id="file"
-                            type="file"
-                            ref={fileInputRef}
-                            className="hidden"
-                            onChange={handleFileChange}
-                        />
+                        <Input id="file" type="file" ref={inputRef} className="hidden" onChange={handleFileChange} />
                     </div>
                     <Button
                         type="button"
                         className="w-full border bg-blue-600 text-white hover:bg-blue-700"
-                        onClick={handleSubmit}
+                        onClick={handleUpload}
                     >
                         Upload
                     </Button>

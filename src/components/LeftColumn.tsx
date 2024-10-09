@@ -3,22 +3,21 @@
 import { Button } from '@/components/ui/button'
 import { FolderOpen, Share2, Trash, Upload, LogOut, File } from 'lucide-react'
 
-/**
- * The left column of the file list. Contains the file list navigation and upload button
- *
- * @param activeSection - The active section of the left column
- * @param setActiveSection - A function to set the active section of the left column
- * @param handleUpload - A function to handle file upload
- * @param handleLogout - A function to handle user logout
- */
 interface LeftColumnProps {
     activeSection: string
-    setActiveSection: (section: string) => void
-    handleUpload: () => void
+    triggerUpload: () => void
+    triggerSettings: () => void
+    handleSectionChange: (section: 'my-files' | 'shared') => void
     handleLogout: () => void
 }
 
-const LeftColumn = ({ activeSection, setActiveSection, handleUpload, handleLogout }: LeftColumnProps) => {
+const LeftColumn = ({
+    activeSection,
+    triggerUpload,
+    triggerSettings,
+    handleSectionChange,
+    handleLogout,
+}: LeftColumnProps) => {
     return (
         <div className="w-full h-full bg-white shadow-md flex flex-col border">
             <div className="p-4 flex-grow overflow-y-auto">
@@ -30,7 +29,7 @@ const LeftColumn = ({ activeSection, setActiveSection, handleUpload, handleLogou
                     <ul className="space-y-2">
                         <li>
                             <button
-                                onClick={() => setActiveSection('my-files')}
+                                onClick={() => handleSectionChange('my-files')}
                                 className={`flex items-center space-x-2 w-full p-2 rounded-md ${
                                     activeSection === 'my-files'
                                         ? 'bg-blue-100 text-blue-600'
@@ -43,7 +42,7 @@ const LeftColumn = ({ activeSection, setActiveSection, handleUpload, handleLogou
                         </li>
                         <li>
                             <button
-                                onClick={() => setActiveSection('shared')}
+                                onClick={() => handleSectionChange('shared')}
                                 className={`flex items-center space-x-2 w-full p-2 rounded-md ${
                                     activeSection === 'shared'
                                         ? 'bg-blue-100 text-blue-600'
@@ -56,24 +55,20 @@ const LeftColumn = ({ activeSection, setActiveSection, handleUpload, handleLogou
                         </li>
                         <li>
                             <button
-                                onClick={() => setActiveSection('deleted')}
-                                className={`flex items-center space-x-2 w-full p-2 rounded-md ${
-                                    activeSection === 'deleted'
-                                        ? 'bg-blue-100 text-blue-600'
-                                        : 'text-gray-600 hover:bg-gray-100'
-                                }`}
-                            >
-                                <Trash size={20} />
-                                <span>Deleted</span>
-                            </button>
-                        </li>
-                        <li>
-                            <button
-                                onClick={handleUpload}
+                                onClick={triggerUpload}
                                 className="flex items-center space-x-2 w-full p-2 rounded-md text-gray-600 hover:bg-gray-100"
                             >
                                 <Upload size={20} />
                                 <span>Upload File</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button
+                                onClick={triggerSettings}
+                                className="flex items-center space-x-2 w-full p-2 rounded-md text-gray-600 hover:bg-gray-100"
+                            >
+                                <Trash size={20} />
+                                <span>Settings</span>
                             </button>
                         </li>
                     </ul>

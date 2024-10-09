@@ -1,13 +1,13 @@
 import { withApiAuthRequired, getSession } from '@auth0/nextjs-auth0'
 import { NextRequest, NextResponse } from 'next/server'
 import { NextApiHandler } from 'next'
-import { getUserFiles } from '@/services/fileService'
 import { getUserById } from '@/services/userService'
+import { getSharedFiles } from '@/services/shareService'
 
-/*
- * GET /api/users/:userId/files
+/**
+ * GET /api/users/:userId/shared
  *
- * Get all files owned by the user
+ * Get all files shared with the user
  */
 const getHandler = async (
     req: NextRequest,
@@ -35,7 +35,7 @@ const getHandler = async (
             )
         }
 
-        const files = await getUserFiles(userMongoId)
+        const files = await getSharedFiles(userMongoId)
 
         return NextResponse.json(files, { status: 200 })
     } catch (error: any) {

@@ -34,7 +34,10 @@ const deleteHandler = async (
         const fileOwnerMongoId = file.ownerId.toString()
 
         if (fileOwnerMongoId !== userMongoId) {
-            return NextResponse.json({ error: 'Unauthorized: userId does not match file ownerId' }, { status: 403 })
+            return NextResponse.json(
+                { error: 'Unauthorized: requesting userId does not match file ownerId' },
+                { status: 403 }
+            )
         }
 
         const deleteResult = await deleteFile(params.fileId)

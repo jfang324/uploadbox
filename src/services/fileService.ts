@@ -53,7 +53,7 @@ export const deleteFile = async (fileId: string) => {
     await connectToDb()
 
     try {
-        const response = await File.deleteOne({ _id: fileId })
+        const response = await File.findOneAndDelete({ _id: fileId })
 
         return response
     } catch (error) {
@@ -96,6 +96,12 @@ export const getUserFiles = async (userId: string): Promise<(FileDocument & { ow
     }
 }
 
+/**
+ * Get a file by its mongoId
+ *
+ * @param fileId - The mongoId of the file
+ * @returns The file document
+ */
 export const getFileById = async (fileId: string): Promise<FileDocument> => {
     if (!fileId) {
         throw new Error('Missing fileId')

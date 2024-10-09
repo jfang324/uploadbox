@@ -5,30 +5,13 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Search, Trash2, ListCollapse } from 'lucide-react'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { FileDocument } from '@/interfaces/FileDocument'
 import FileEntry from '@/components/FileEntry'
 import LeftColumn from '@/components/LeftColumn'
-import { FileDocument } from '@/interfaces/FileDocument'
 
-/**
- * The file list component. Consisting of a left column, a search bar, and a list of files
- *
- * @param activeSection - The active section of the left column
- * @param setActiveSection - A function to set the active section of the left column
- * @param searchTerm - The search term entered by the user
- * @param handleSearch - A function to handle search term changes
- * @param fileTypeFilter - The file type filter selected by the user
- * @param handleFileTypeFilter - A function to handle file type filter changes
- * @param fileTypes - An array of all available file types
- * @param files - An array of all files in the system
- * @param selectedFiles - An array of all selected files
- * @param handleSelectFile - A function to handle file selection
- * @param handleDeleteSelected - A function to handle file deletion
- * @param handleUpload - A function to handle file upload
- * @param handleLogout - A function to handle user logout
- */
 interface FileListProps {
     activeSection: string
-    setActiveSection: (section: string) => void
+    handleSectionChange: (section: 'my-files' | 'shared') => void
     searchTerm: string
     handleSearch: (event: React.ChangeEvent<HTMLInputElement>) => void
     fileTypeFilter: string
@@ -36,15 +19,18 @@ interface FileListProps {
     fileTypes: string[]
     files: Array<FileDocument & { owner: string }>
     selectedFiles: Set<string>
+    triggerUpload: () => void
+    triggerSettings: () => void
+    triggerShare: (fileId: string, fileName: string) => void
     handleSelectFile: (id: string) => void
     handleDeleteSelected: () => void
-    handleUpload: () => void
+    handleDownload: (id: string) => void
     handleLogout: () => void
 }
 
 const FileList = ({
     activeSection,
-    setActiveSection,
+    handleSectionChange,
     searchTerm,
     handleSearch,
     fileTypeFilter,
@@ -52,9 +38,12 @@ const FileList = ({
     fileTypes,
     files,
     selectedFiles,
+    triggerUpload,
+    triggerSettings,
+    triggerShare,
     handleSelectFile,
     handleDeleteSelected,
-    handleUpload,
+    handleDownload,
     handleLogout,
 }: FileListProps) => {
     return (
@@ -95,8 +84,9 @@ const FileList = ({
                         <SheetContent side={'left'} className="bg-white w-full lg:w-1/4 border border-black p-0">
                             <LeftColumn
                                 activeSection={activeSection}
-                                setActiveSection={setActiveSection}
-                                handleUpload={handleUpload}
+                                handleSectionChange={handleSectionChange}
+                                triggerUpload={triggerUpload}
+                                triggerSettings={triggerSettings}
                                 handleLogout={handleLogout}
                             />
                         </SheetContent>
@@ -117,14 +107,16 @@ const FileList = ({
                 <ul className="divide-y divide-gray-200">
                     {files.map((file: FileDocument & { owner: string }) => (
                         <FileEntry
-                            key={file?._id as string}
-                            id={file?._id as string}
+                            key={file._id as string}
+                            id={file._id as string}
                             name={file.name}
                             extension={file.extension}
                             size={file.size}
                             owner={file.owner}
                             isSelected={selectedFiles.has(file._id as string)}
-                            onSelect={handleSelectFile}
+                            triggerShare={triggerShare}
+                            handleSelect={handleSelectFile}
+                            handleDownload={handleDownload}
                         />
                     ))}
                 </ul>
