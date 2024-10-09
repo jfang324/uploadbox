@@ -40,7 +40,7 @@ npm install
 //use values provided to you after creating an app in auth0
 AUTH0_SECRET='use [openssl rand -hex 32] to generate a 32 bytes value'
 AUTH0_BASE_URL='http://localhost:3000'
-AUTH0_ISSUER_BASE_URL=https://dev-41uie5dhg3arv8y4.us.auth0.com
+AUTH0_ISSUER_BASE_URL=<issuer url provided after creating an account in auth0>
 AUTH0_CLIENT_ID='TJva7LgAH4ggEzhjyBqozQGrl3npKLiz'
 AUTH0_CLIENT_SECRET='nW7WhW-UzwjRQzJZtICUu96EdQpBQlWdzK1rMIV2YxVauUqE77McVOdz6WwHxByO'
 
@@ -63,6 +63,7 @@ npm run dev
 ```
 
 ## Gallery & Demonstrations
+
 <img src='https://github.com/user-attachments/assets/6978769b-731f-436b-9a7b-fbf183f32ecf'> </img>
 _Initial login page_
 
